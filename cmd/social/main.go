@@ -1,25 +1,35 @@
-package social
+package main
 
 import (
 	"context"
 	"log"
 	"os"
+	"os/signal"
+	"social-network/internal/app"
+	"social-network/internal/config"
+	"social-network/internal/logger"
+	"social-network/internal/storage"
+	"syscall"
 	"time"
 
-	"github.com/usmartpro/social-network/internal/config"
-	"github.com/usmartpro/social-network/internal/logger"
+	internalhttp "social-network/internal/server/http"
 )
 
 func main() {
+	var logg *logger.Logger
 	configuration, err := config.LoadConfiguration()
 	if err != nil {
 		log.Fatalf("Error read configuration: %s", err)
 	}
-	logg, err := logger.New(configuration.Logger)
+	logg, err = logger.New(configuration.Logger)
 	if err != nil {
 		log.Println("error create logger: " + err.Error())
 		os.Exit(1)
 	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
 
 	storageConf := storage.New(ctx, configuration.Storage.Dsn).Connect(ctx)
 	socialNetwork := app.New(logg, storageConf)
@@ -46,4 +56,6 @@ func main() {
 	}()
 
 	logg.Info("social network is running...")
+
+	<-ctx.Done()
 }

@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"social-network/internal/config"
 
 	"github.com/sirupsen/logrus"
-	"github.com/usmartpro/social-network/internal/config"
 )
 
 type Logger struct {
