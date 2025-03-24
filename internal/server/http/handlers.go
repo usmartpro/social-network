@@ -135,6 +135,40 @@ func (s *ServerHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(responseData)
 }
 
+func (s *ServerHandlers) UserSearch(w http.ResponseWriter, r *http.Request) {
+	var result []User
+	firstName := r.URL.Query().Get("first_name")
+	lastName := r.URL.Query().Get("last_name")
+
+	usersDB, err := s.app.UserSearch(firstName, lastName)
+
+	if err != nil || usersDB == nil {
+		ResponseError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	for _, userDB := range usersDB {
+		result = append(result, User{
+			ID:         userDB.ID,
+			FirstName:  userDB.FirstName,
+			SecondName: userDB.SecondName,
+			BirthDate:  userDB.BirthDate,
+			Biography:  userDB.Biography,
+			City:       userDB.City,
+		})
+	}
+
+	responseData, err := json.Marshal(result)
+	if err != nil {
+		ResponseError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(responseData)
+}
+
 func ResponseError(w http.ResponseWriter, code int, err error) {
 	data, err := json.Marshal(Error{
 		false,

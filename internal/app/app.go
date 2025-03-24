@@ -13,6 +13,7 @@ type Logger interface {
 type Storage interface {
 	RegisterUser(firstName, secondName, birthDate, biography, city, password string) (id *string, err error)
 	GetUser(ID string) (userDB *UserDB, err error)
+	UserSearch(firstName, lastName string) (usersDB []UserDB, err error)
 }
 
 func New(logger Logger, storage Storage) *App {
@@ -33,5 +34,10 @@ func (a *App) RegisterUser(firstName, secondName, birthDate, biography, city, pa
 
 func (a *App) GetUser(ID string) (userDB *UserDB, err error) {
 	userDB, err = a.Storage.GetUser(ID)
+	return
+}
+
+func (a *App) UserSearch(firstName, lastName string) (usersDB []UserDB, err error) {
+	usersDB, err = a.Storage.UserSearch(firstName, lastName)
 	return
 }

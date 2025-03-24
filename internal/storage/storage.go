@@ -64,9 +64,9 @@ func (s *Storage) RegisterUser(firstName, secondName, birthDate, biography, city
 }
 
 func (s *Storage) GetUser(ID string) (userDB *app.UserDB, err error) {
-	var uID, firstName, secondName, birthDate, biography, city, password string
+	var uID, firstName, secondName, birthDate, biography, city string
 
-	sql := `SELECT id, first_name, second_name, TO_CHAR(birthdate, 'YYYY-MM-DD') AS birthdate, biography, city, password 
+	sql := `SELECT id, first_name, second_name, TO_CHAR(birthdate, 'YYYY-MM-DD') AS birthdate, biography, city
 			FROM users WHERE id = $1 LIMIT 1`
 	err = s.conn.QueryRow(s.ctx, sql, ID).Scan(
 		&uID,
@@ -75,7 +75,6 @@ func (s *Storage) GetUser(ID string) (userDB *app.UserDB, err error) {
 		&birthDate,
 		&biography,
 		&city,
-		&password,
 	)
 
 	if err != nil {
@@ -89,7 +88,39 @@ func (s *Storage) GetUser(ID string) (userDB *app.UserDB, err error) {
 		BirthDate:  birthDate,
 		Biography:  biography,
 		City:       city,
-		Password:   password,
+	}
+	return
+}
+
+func (s *Storage) UserSearch(firstName, lastName string) (usersDB []app.UserDB, err error) {
+	sql := `SELECT id, first_name, second_name, TO_CHAR(birthdate, 'YYYY-MM-DD') AS birthdate, biography, city 
+			FROM public.users WHERE first_name LIKE $1 AND second_name LIKE $2
+			ORDER BY id`
+
+	rows, err := s.conn.Query(s.ctx, sql, firstName+"%", lastName+"%")
+	if err != nil {
+		return nil, ErrObjectNotFound
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user app.UserDB
+		err := rows.Scan(
+			&user.ID,
+			&user.FirstName,
+			&user.SecondName,
+			&user.BirthDate,
+			&user.Biography,
+			&user.City,
+		)
+		if err != nil {
+			return nil, err
+		}
+		usersDB = append(usersDB, user)
+	}
+
+	if len(usersDB) == 0 {
+		return nil, ErrObjectNotFound
 	}
 	return
 }
