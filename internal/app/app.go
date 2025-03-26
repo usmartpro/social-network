@@ -1,5 +1,9 @@
 package app
 
+import (
+	"errors"
+)
+
 type App struct {
 	Logger  Logger
 	Storage Storage
@@ -22,6 +26,12 @@ func New(logger Logger, storage Storage) *App {
 		Storage: storage,
 	}
 }
+
+var (
+	ErrExecQuery      = errors.New("ошибка выполнения запроса")
+	ErrObjectNotFound = errors.New("анкета не найдена")
+	ErrRegisterUser   = errors.New("get rows error")
+)
 
 func (a *App) RegisterUser(firstName, secondName, birthDate, biography, city, password string) (id *string, err error) {
 	if id, err = a.Storage.RegisterUser(firstName, secondName, birthDate, biography, city, password); err != nil {

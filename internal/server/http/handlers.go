@@ -136,14 +136,21 @@ func (s *ServerHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServerHandlers) UserSearch(w http.ResponseWriter, r *http.Request) {
-	var result []User
+	var (
+		result  []User
+		errCode int
+	)
 	firstName := r.URL.Query().Get("first_name")
 	lastName := r.URL.Query().Get("last_name")
 
 	usersDB, err := s.app.UserSearch(firstName, lastName)
 
 	if err != nil || usersDB == nil {
-		ResponseError(w, http.StatusInternalServerError, err)
+		errCode = http.StatusInternalServerError
+		if err == app.ErrObjectNotFound {
+			errCode = http.StatusBadRequest
+		}
+		ResponseError(w, errCode, err)
 		return
 	}
 
