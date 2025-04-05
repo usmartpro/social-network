@@ -49,9 +49,6 @@ services:
             STORAGE_DSN: ${STORAGE_DSN}
             HTTP_HOST: ${HTTP_HOST}
             HTTP_PORT: ${HTTP_PORT}
-            RABBIT_DSN: ${RABBIT_DSN}
-            RABBIT_EXCHANGE: ${RABBIT_EXCHANGE}
-            RABBIT_QUEUE: ${RABBIT_QUEUE}
     networks:
       - localnet
 
