@@ -1,10 +1,6 @@
 package config
 
-import (
-	"os"
-
-	"github.com/joho/godotenv"
-)
+import "os"
 
 type Conf struct {
 	Logger  LoggerConf
@@ -28,10 +24,6 @@ type StorageConf struct {
 }
 
 func LoadConfiguration() (*Conf, error) {
-	if err := godotenv.Load(".env"); err != nil {
-		panic(err)
-	}
-
 	return &Conf{
 		Logger: LoggerConf{
 			Level: os.Getenv("LOG_LEVEL"),

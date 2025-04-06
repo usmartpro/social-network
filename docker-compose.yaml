@@ -6,7 +6,7 @@ services:
 
   postgres:
     image: postgres:17.4
-    container_name: usmartpro-pg
+    container_name: social-pg
     restart: always
     ports:
       - 5432:5432
@@ -21,7 +21,7 @@ services:
       - localnet
 
   migrations:
-    container_name: usmartpro-migrations
+    container_name: social-migrations
     build:
       context: .
       dockerfile: ./build/migrations/Dockerfile
@@ -33,7 +33,7 @@ services:
     command: [ "/bin/sh", "-c", "net-wait-go -addrs postgres:5432 && sleep 5 && /bin/goose up" ]
 
   social:
-    container_name: usmartpro-app
+    container_name: social-app
     build:
       context: .
       dockerfile: ./build/app/Dockerfile
@@ -43,17 +43,17 @@ services:
     ports:
       - 8000:8000
     environment:
-            LOG_LEVEL: ${LOG_LEVEL}
-            LOG_FILENAME: ${LOG_FILENAME}
-            STORAGE_TYPE: ${STORAGE_TYPE}
-            STORAGE_DSN: ${STORAGE_DSN}
-            HTTP_HOST: ${HTTP_HOST}
-            HTTP_PORT: ${HTTP_PORT}
+            LOG_LEVEL: "info"
+            LOG_FILENAME: "stderr"
+            STORAGE_TYPE: "base"
+            STORAGE_DSN: "postgresql://postgres:postgres@postgres:5432/social?sslmode=disable"
+            HTTP_HOST: "127.0.0.1"
+            HTTP_PORT: "8000"
     networks:
       - localnet
 
  # tests:
-    #   container_name: usmartpro-tests
+    #   container_name: social-tests
       #build:
       #context: .
       #dockerfile: ./build/tests/Dockerfile
