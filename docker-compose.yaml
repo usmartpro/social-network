@@ -31,6 +31,8 @@ services:
       GOOSE_DRIVER: postgres
       GOOSE_DBSTRING: "postgresql://postgres:postgres@postgres:5432/social?sslmode=disable"
     command: [ "/bin/sh", "-c", "net-wait-go -addrs postgres:5432 && sleep 5 && /bin/goose up" ]
+    networks:
+      - localnet
 
   social:
     container_name: social-app
