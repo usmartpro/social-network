@@ -16,6 +16,7 @@ type Storage struct {
 	dsn  string
 }
 
+// New ...
 func New(ctx context.Context, dsn string) *Storage {
 	return &Storage{
 		ctx: ctx,
@@ -23,6 +24,7 @@ func New(ctx context.Context, dsn string) *Storage {
 	}
 }
 
+// Connect ...
 func (s *Storage) Connect(ctx context.Context) app.Storage {
 	conn, err := pgxpool.Connect(ctx, s.dsn)
 	if err != nil {
@@ -39,6 +41,7 @@ func (s *Storage) Close() {
 	s.conn.Close()
 }
 
+// RegisterUser ...
 func (s *Storage) RegisterUser(firstName, secondName, birthDate, biography, city, password string) (id *string, err error) {
 	sql := `INSERT INTO users (first_name, second_name, birthdate, biography, city, password, created_at, updated_at)
 			VALUES ($1, $2, $3, $4, $5, md5($6), NOW(), NOW()) RETURNING id`
@@ -58,11 +61,12 @@ func (s *Storage) RegisterUser(firstName, secondName, birthDate, biography, city
 	return id, err
 }
 
+// GetUser ...
 func (s *Storage) GetUser(ID string) (userDB *app.UserDB, err error) {
 	var uID, firstName, secondName, birthDate, biography, city string
 
 	sql := `SELECT id, first_name, second_name, TO_CHAR(birthdate, 'YYYY-MM-DD') AS birthdate, biography, city
-			FROM users WHERE id = $1 LIMIT 1`
+			FROM public.users WHERE id = $1 LIMIT 1`
 	err = s.conn.QueryRow(s.ctx, sql, ID).Scan(
 		&uID,
 		&firstName,
@@ -87,6 +91,7 @@ func (s *Storage) GetUser(ID string) (userDB *app.UserDB, err error) {
 	return
 }
 
+// UserSearch ...
 func (s *Storage) UserSearch(firstName, lastName string) (usersDB []app.UserDB, err error) {
 	var rows pgx.Rows
 	sql := `SELECT id, first_name, second_name, TO_CHAR(birthdate, 'YYYY-MM-DD') AS birthdate, biography, city 
@@ -122,5 +127,41 @@ func (s *Storage) UserSearch(firstName, lastName string) (usersDB []app.UserDB, 
 	if len(usersDB) == 0 {
 		return nil, app.ErrObjectNotFound
 	}
+	return
+}
+
+// PostFeed ...
+func (s *Storage) PostFeed(ID string, limit, offset int) (postsDB []app.PostDB, err error) {
+	var rows pgx.Rows
+	sql := `SELECT p.id, p.text, p.author_user_id FROM public.friends f
+			JOIN public.posts p ON f.user_id2 = p.author_user_id
+			WHERE f.user_id1 = $1
+			ORDER BY p.id DESC
+			LIMIT $2
+			OFFSET $3;`
+
+	err = s.conn.Ping(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	rows, err = s.conn.Query(s.ctx, sql, ID, limit, offset)
+	if err != nil {
+		return nil, app.ErrExecQuery
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post app.PostDB
+		err = rows.Scan(
+			&post.ID,
+			&post.Text,
+			&post.AuthorUserID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		postsDB = append(postsDB, post)
+	}
+
 	return
 }

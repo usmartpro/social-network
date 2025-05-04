@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"social-network/internal/app"
+	"social-network/internal/cache"
 	"social-network/internal/config"
 	"social-network/internal/logger"
 	"social-network/internal/storage"
@@ -32,7 +33,10 @@ func main() {
 	defer cancel()
 
 	storageConf := storage.New(ctx, configuration.Storage.Dsn).Connect(ctx)
-	socialNetwork := app.New(logg, storageConf)
+
+	cacheConf := cache.New(ctx, configuration.Cache.Dsn).Connect(ctx)
+
+	socialNetwork := app.New(logg, storageConf, cacheConf)
 
 	// HTTP
 	server := internalhttp.NewServer(logg, socialNetwork, configuration.HTTP.Host, configuration.HTTP.Port)
