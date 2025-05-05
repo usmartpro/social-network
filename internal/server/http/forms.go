@@ -14,6 +14,12 @@ type UserExtended struct {
 	Password string `json:"password"`
 }
 
+type Post struct {
+	ID           string `json:"id"`
+	Text         string `json:"text"`
+	AuthorUserID string `json:"author_user_id"`
+}
+
 type LoginRequest struct {
 	ID       string `json:"id"`
 	Password string `json:"password"`

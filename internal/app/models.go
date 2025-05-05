@@ -9,3 +9,9 @@ type UserDB struct {
 	City       string `db:"city"`
 	Password   string `db:"password"`
 }
+
+type PostDB struct {
+	ID           string `db:"id"`
+	Text         string `db:"text"`
+	AuthorUserID string `db:"author_user_id"`
+}

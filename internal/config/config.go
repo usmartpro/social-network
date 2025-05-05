@@ -6,6 +6,7 @@ type Conf struct {
 	Logger  LoggerConf
 	Storage StorageConf
 	HTTP    HTTPConf
+	Cache   CacheConf
 }
 
 type HTTPConf struct {
@@ -23,6 +24,11 @@ type StorageConf struct {
 	Dsn  string
 }
 
+type CacheConf struct {
+	Type string
+	Dsn  string
+}
+
 func LoadConfiguration() (*Conf, error) {
 	return &Conf{
 		Logger: LoggerConf{
@@ -36,6 +42,9 @@ func LoadConfiguration() (*Conf, error) {
 		HTTP: HTTPConf{
 			Host: os.Getenv("HTTP_HOST"),
 			Port: os.Getenv("HTTP_PORT"),
+		},
+		Cache: CacheConf{
+			Dsn: os.Getenv("CACHE_DSN"),
 		},
 	}, nil
 }

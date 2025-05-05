@@ -52,6 +52,7 @@ func NewRouter(app *app.App) http.Handler {
 	r.HandleFunc("/register", handlers.RegisterUser).Methods("POST")
 	r.HandleFunc("/user/get", handlers.GetUser).Methods("GET")
 	r.HandleFunc("/user/search", handlers.UserSearch).Methods("GET")
+	r.HandleFunc("/post/feed", handlers.PostFeed).Methods("GET")
 
 	return r
 }
